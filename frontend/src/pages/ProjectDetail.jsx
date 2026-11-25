@@ -114,7 +114,7 @@ export default function ProjectDetail({ session, isAdmin, onSignIn }) {
             {isAdmin && (
               <button
                 type="button"
-                className="button button-outline"
+                className="button button-light"
                 onClick={() => {
                   setSaved(false);
                   setEditing(true);
