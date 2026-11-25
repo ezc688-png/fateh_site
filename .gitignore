@@ -1,0 +1,21 @@
+# secrets: never upload these
+.env
+.env.*
+**/.env
+**/.env.*
+get_token.py
+chat.json
+
+# Python
+.venv/
+venv/
+__pycache__/
+*.pyc
+
+# Node
+node_modules/
+dist/
+
+# editor and OS
+.vscode/
+.DS_Store
