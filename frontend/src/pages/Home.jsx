@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { MessageCircle, Phone } from 'lucide-react';
+import { Phone } from 'lucide-react';
 import ProjectCard from '../components/ProjectCard';
 import { api } from '../lib/api';
 import { friendlyError } from '../lib/format';
 import { SITE } from '../lib/site';
+import WhatsAppIcon from '../components/WhatsAppIcon';
 
 // 6 columns x 9 rows of windows. The lit pattern is fixed so the tower looks the same on every visit.
 const WINDOWS = Array.from({ length: 54 }, (_, index) => ({ index, lit: (index * 5) % 7 < 3 }));
@@ -76,7 +77,7 @@ export default function Home() {
         <div className="contact-inner">
           <div>
             <h2>Want to see a project in person?</h2>
-            <p>Send me a message to arrange a viewing with me.</p>
+            <p>Send a message and I will arrange a viewing.</p>
           </div>
           <div className="contact-actions">
             <a
@@ -85,7 +86,7 @@ export default function Home() {
               target="_blank"
               rel="noreferrer"
             >
-              <MessageCircle size={18} aria-hidden="true" /> WhatsApp me
+              <WhatsAppIcon size={18} /> WhatsApp me
             </a>
             <a href={`tel:${SITE.phone.replace(/[\s-]/g, '')}`} className="button button-outline">
               <Phone size={18} aria-hidden="true" /> Call {SITE.phone}

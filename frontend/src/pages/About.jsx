@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { Mail, MessageCircle, Phone } from 'lucide-react';
+import { Mail, Phone } from 'lucide-react';
 import { SITE } from '../lib/site';
+import WhatsAppIcon from '../components/WhatsAppIcon';
 
 // Opens WhatsApp (app or web) with the message from lib/site.js already typed in.
 const whatsappLink = `https://wa.me/${SITE.whatsapp}?text=${encodeURIComponent(SITE.whatsappMessage)}`;
@@ -38,7 +39,7 @@ export default function About() {
           </li>
           <li>
             <a href={whatsappLink} target="_blank" rel="noreferrer">
-              <MessageCircle size={18} aria-hidden="true" /> WhatsApp {SITE.phone}
+              <WhatsAppIcon size={18} /> WhatsApp {SITE.phone}
             </a>
           </li>
         </ul>
