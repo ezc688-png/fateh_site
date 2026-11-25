@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { ArrowLeft, Building2 } from 'lucide-react';
 import Comments from '../components/Comments';
+import ProjectEditForm from '../components/ProjectEditForm';
 import ProjectGallery from '../components/ProjectGallery';
 import { api } from '../lib/api';
 import {
@@ -18,11 +19,15 @@ export default function ProjectDetail({ session, isAdmin, onSignIn }) {
   const [project, setProject] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [editing, setEditing] = useState(false);
+  const [saved, setSaved] = useState(false);
 
   useEffect(() => {
     let ignore = false;
     setLoading(true);
     setError('');
+    setEditing(false);
+    setSaved(false);
     setProject(null);
     api(`/projects/${id}`)
       .then((data) => {
@@ -92,33 +97,60 @@ export default function ProjectDetail({ session, isAdmin, onSignIn }) {
         onChanged={refreshProject}
       />
 
-      <div className="detail-head">
-        <h1>{project.name}</h1>
-        <p className="detail-price">{priceRange(project.price_min, project.price_max)}</p>
-      </div>
+      {editing ? (
+        <ProjectEditForm
+          project={project}
+          onSaved={(updated) => {
+            setProject(updated);
+            setEditing(false);
+            setSaved(true);
+          }}
+          onCancel={() => setEditing(false)}
+        />
+      ) : (
+        <>
+          <div className="detail-head">
+            <h1>{project.name}</h1>
+            {isAdmin && (
+              <button
+                type="button"
+                className="button button-outline"
+                onClick={() => {
+                  setSaved(false);
+                  setEditing(true);
+                }}
+              >
+                Edit details
+              </button>
+            )}
+          </div>
 
-      <div className="detail-body">
-        <div className="detail-text">
-          <h2>About this project</h2>
-          {project.description ? (
-            <p>{project.description}</p>
-          ) : (
-            <p className="muted-text">The description for this project has not been added yet.</p>
-          )}
-        </div>
+          {saved && <div className="notice success">Your changes were saved.</div>}
 
-        <aside className="glance">
-          <h2>At a glance</h2>
-          <dl>
-            <div><dt>Type</dt><dd>{typeLabel(project)}</dd></div>
-            <div><dt>Status</dt><dd>{statusLabel(project.status)}</dd></div>
-            <div><dt>Area</dt><dd>{project.area}</dd></div>
-            <div><dt>Bedrooms</dt><dd>{bedroomsLabel(project.bedrooms)}</dd></div>
-            <div><dt>Size</dt><dd>{sizeLabel(project.sqft)}</dd></div>
-            <div><dt>Price range</dt><dd>{priceRange(project.price_min, project.price_max)}</dd></div>
-          </dl>
-        </aside>
-      </div>
+          <div className="detail-body">
+            <div className="detail-text">
+              <h2>About this project</h2>
+              {project.description ? (
+                <p>{project.description}</p>
+              ) : (
+                <p className="muted-text">The description for this project has not been added yet.</p>
+              )}
+            </div>
+
+            <aside className="glance">
+              <h2>At a glance</h2>
+              <dl>
+                <div><dt>Type</dt><dd>{typeLabel(project)}</dd></div>
+                <div><dt>Status</dt><dd>{statusLabel(project.status)}</dd></div>
+                <div><dt>Area</dt><dd>{project.area}</dd></div>
+                <div><dt>Bedrooms</dt><dd>{bedroomsLabel(project.bedrooms)}</dd></div>
+                <div><dt>Size</dt><dd>{sizeLabel(project.sqft)}</dd></div>
+                <div><dt>Price range</dt><dd>{priceRange(project.price_min, project.price_max)}</dd></div>
+              </dl>
+            </aside>
+          </div>
+        </>
+      )}
 
       <Comments projectId={project.id} session={session} onSignIn={onSignIn} />
     </div>

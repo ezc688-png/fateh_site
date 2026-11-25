@@ -80,7 +80,7 @@ export default function Home() {
           </div>
           <div className="contact-actions">
             <a
-              href={`https://wa.me/${SITE.whatsapp}`}
+              href={`https://wa.me/${SITE.whatsapp}?text=${encodeURIComponent(SITE.whatsappMessage)}`}
               className="button button-light"
               target="_blank"
               rel="noreferrer"

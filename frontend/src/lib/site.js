@@ -11,7 +11,7 @@ export const SITE = {
     'I am currently a Team Lead at Zeon ST Group, where I guide a team while still staying hands-on with my own clients. I am thoughtful and detail-oriented, and I take the time to listen so I understand what you actually want from a home, not just what you say in the first conversation.',
     'When you work with me, you can expect clear communication, careful attention to the details that matter, and honest advice at every step. My aim is to make the process feel considered and well-managed, so you can make your decision with confidence.',
 ],
-  email: 'ft@fateh.com',
+  email: 'fateh.klre@gmail.com',
   phone: '+60177563358',
   // WhatsApp number: country code first, digits only, no + or spaces (Malaysia: 012-345 6789 becomes 60123456789).
   whatsapp: '60177563358',
