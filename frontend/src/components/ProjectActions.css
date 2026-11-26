@@ -1,0 +1,28 @@
+/* Buttons under "At a glance": WhatsApp, request a viewing, favourites. */
+.glance-actions {
+  display: grid;
+  gap: 0.6rem;
+  margin-top: 1.25rem;
+}
+
+.glance-actions .button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.button-whatsapp {
+  background: #0f7a6b;
+  color: #fff;
+  border-color: #0f7a6b;
+}
+
+.button-whatsapp:hover { background: #0b5f53; border-color: #0b5f53; }
+
+.favorite-note {
+  margin: 0.5rem 0 0;
+  font-size: 0.82rem;
+  color: var(--ink-soft);
+}

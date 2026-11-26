@@ -1,20 +1,25 @@
-from fastapi import APIRouter, Depends
+from typing import Annotated
 
-from postlight.admin import admin_emails, bearer_scheme
-from postlight.clients import storage_client
+from fastapi import APIRouter, Depends
+from fastapi.security import HTTPAuthorizationCredentials
+
+from postlight.admin import bearer_scheme, member_info, optional_user
+from postlight.routers.projects import image_url
 
 router = APIRouter()
 
 
 @router.get("/me")
-def me(credentials=Depends(bearer_scheme)):
-    """Tells the website whether the signed-in user is the site owner.
+def me(credentials: Annotated[HTTPAuthorizationCredentials | None, Depends(bearer_scheme)]):
+    """Tells the website who is signed in: role, display name and photo.
     It only decides which buttons to show; the real permission is still checked on every change."""
-    if credentials is None:
-        return {"is_admin": False}
-    try:
-        user = storage_client.auth.get_user(credentials.credentials).user
-    except Exception:
-        return {"is_admin": False}
-    email = (user.email or "").lower() if user else ""
-    return {"is_admin": email in admin_emails()}
+    user = optional_user(credentials)
+    if user is None:
+        return {"is_admin": False, "role": None, "display_name": None, "avatar_url": None}
+    member = member_info(*user)
+    return {
+        "is_admin": member["role"] == "administrator",
+        "role": member["role"],
+        "display_name": member["name"],
+        "avatar_url": image_url(member["avatar_path"]),
+    }

@@ -1,30 +1,22 @@
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Form, Header, HTTPException
+from fastapi import APIRouter, Depends, Form, HTTPException
 from psycopg.rows import dict_row
 
-from postlight.clients import storage_client
+from postlight.admin import current_member
 from postlight.database import connection
 from postlight.dependencies import current_user
+from postlight.routers.projects import image_url
+from postlight.services.discord import notify
 
 router = APIRouter()
 
-
-def current_author(
-    authorization: Annotated[str | None, Header()] = None,
-) -> tuple[UUID, str]:
-    """Like current_user, but also returns a display name (the part of the email before @)."""
-    if not authorization or not authorization.startswith("Bearer "):
-        raise HTTPException(401, "Sign in to continue")
-    try:
-        user = storage_client.auth.get_user(authorization[7:]).user
-        if user is None:
-            raise ValueError("Missing user")
-        name = (user.email or "visitor").split("@")[0]
-        return UUID(str(user.id)), name
-    except Exception as exc:
-        raise HTTPException(401, "Session expired. Please sign in again") from exc
+# One query used everywhere: the comment plus the author's CURRENT display name and photo.
+COMMENT_SQL = (
+    "select c.*, coalesce(pr.display_name, c.author_name) as shown_name, pr.avatar_path "
+    "from public.comments c left join public.profiles pr on pr.user_id = c.author_id "
+)
 
 
 def clean_body(body: str) -> str:
@@ -39,7 +31,8 @@ def serialize_comment(row: dict) -> dict:
         "id": str(row["id"]),
         "project_id": str(row["project_id"]),
         "author_id": str(row["author_id"]),
-        "author_name": row["author_name"],
+        "author_name": row["shown_name"],
+        "author_avatar": image_url(row.get("avatar_path")),
         "body": row["body"],
         "created_at": row["created_at"].isoformat(),
         "updated_at": row["updated_at"].isoformat(),
@@ -52,10 +45,7 @@ def list_comments(project_id: UUID):
         cur.execute("select 1 from public.projects where id = %s", (project_id,))
         if cur.fetchone() is None:
             raise HTTPException(404, "Project not found")
-        cur.execute(
-            "select * from public.comments where project_id = %s order by created_at desc",
-            (project_id,),
-        )
+        cur.execute(COMMENT_SQL + "where c.project_id = %s order by c.created_at desc", (project_id,))
         return [serialize_comment(row) for row in cur.fetchall()]
 
 
@@ -63,27 +53,38 @@ def list_comments(project_id: UUID):
 def create_comment(
     project_id: UUID,
     body: Annotated[str, Form()],
-    author: Annotated[tuple[UUID, str], Depends(current_author)],
+    member: Annotated[dict, Depends(current_member)],  # signed in AND not banned
 ):
-    user_id, author_name = author
     body = clean_body(body)
     with connection() as conn, conn.cursor(row_factory=dict_row) as cur:
-        cur.execute("select 1 from public.projects where id = %s", (project_id,))
-        if cur.fetchone() is None:
+        cur.execute("select name from public.projects where id = %s", (project_id,))
+        project = cur.fetchone()
+        if project is None:
             raise HTTPException(404, "Project not found")
         cur.execute(
             "insert into public.comments (project_id, author_id, author_name, body) "
-            "values (%s, %s, %s, %s) returning *",
-            (project_id, user_id, author_name, body),
+            "values (%s, %s, %s, %s) returning id",
+            (project_id, member["id"], member["name"], body),
         )
-        return serialize_comment(cur.fetchone())
+        new_id = cur.fetchone()["id"]
+        cur.execute(COMMENT_SQL + "where c.id = %s", (new_id,))
+        row = cur.fetchone()
+
+    # Discord: title says where, the text is exactly what they typed. Runs in the background.
+    notify(
+        f"💬 New comment on {project['name']}",
+        body,
+        [("From", f"{member['name']} ({member['email']})")],
+        color=0x2B7FFF,
+    )
+    return serialize_comment(row)
 
 
 @router.put("/comments/{comment_id}")
 def update_comment(
     comment_id: UUID,
     body: Annotated[str, Form()],
-    user_id: Annotated[UUID, Depends(current_user)],
+    member: Annotated[dict, Depends(current_member)],
 ):
     body = clean_body(body)
     with connection() as conn, conn.cursor(row_factory=dict_row) as cur:
@@ -91,12 +92,13 @@ def update_comment(
         old = cur.fetchone()
         if old is None:
             raise HTTPException(404, "Comment not found")
-        if old["author_id"] != user_id:
+        if old["author_id"] != member["id"]:
             raise HTTPException(403, "You can only edit your own comments")
         cur.execute(
-            "update public.comments set body = %s, updated_at = now() where id = %s returning *",
+            "update public.comments set body = %s, updated_at = now() where id = %s",
             (body, comment_id),
         )
+        cur.execute(COMMENT_SQL + "where c.id = %s", (comment_id,))
         return serialize_comment(cur.fetchone())
 
 

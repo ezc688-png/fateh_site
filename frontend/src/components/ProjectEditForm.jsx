@@ -16,6 +16,7 @@ function toForm(project) {
     is_penthouse: Boolean(project.is_penthouse),
     price_min: project.price_min ?? '',
     price_max: project.price_max ?? '',
+    video_url: project.video_url ?? '',
   };
 }
 
@@ -50,6 +51,7 @@ export default function ProjectEditForm({ project, onSaved, onCancel }) {
     body.append('status', form.status);
     body.append('area', form.area.trim());
     body.append('is_penthouse', form.is_penthouse ? 'true' : 'false');
+    body.append('video_url', form.video_url.trim()); // empty text clears the video
     ['bedrooms', 'sqft', 'price_min', 'price_max'].forEach((key) => {
       if (form[key] !== '') body.append(key, form[key]);
     });
@@ -76,6 +78,16 @@ export default function ProjectEditForm({ project, onSaved, onCancel }) {
               onChange={(event) => setField('name', event.target.value)}
               maxLength={160}
               required
+            />
+          </label>
+
+          <label className="edit-field">
+            YouTube link (optional)
+            <input
+              type="url"
+              value={form.video_url}
+              onChange={(event) => setField('video_url', event.target.value)}
+              placeholder="https://www.youtube.com/watch?v=..."
             />
           </label>
 

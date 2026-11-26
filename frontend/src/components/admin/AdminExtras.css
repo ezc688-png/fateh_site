@@ -1,0 +1,21 @@
+/* Styles for the Enquiries, Favourites, Reviews, Users (roles) and Activity tabs. */
+.role-badge.is-banned { background: #fdecec; color: var(--oxblood); }
+
+.role-select,
+.status-select {
+  padding: 0.4rem 0.5rem;
+  border: 1.5px solid var(--line-strong);
+  border-radius: 4px;
+  background: var(--white);
+  color: var(--ink);
+  font: inherit;
+}
+
+.admin-lead-meta { display: flex; flex-wrap: wrap; gap: 0.4rem 1rem; margin: 0.25rem 0 0.5rem; }
+.admin-lead-meta a { color: var(--signal); font-weight: 600; }
+
+.status-badge { padding: 0.1rem 0.5rem; background: var(--mist); font-size: 0.85rem; font-weight: 600; }
+.status-badge.is-new { background: var(--signal); color: var(--white); }
+
+.admin-two-col { display: grid; gap: 2rem; }
+.admin-stars { color: #b8860b; letter-spacing: 0.1em; }

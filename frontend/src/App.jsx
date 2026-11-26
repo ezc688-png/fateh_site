@@ -1,14 +1,18 @@
 import { useEffect, useState } from 'react';
 import { Link, Route, Routes, useLocation } from 'react-router-dom';
+import AskAI from './components/AskAI';
 import Auth from './components/Auth';
 import Navbar from './components/Navbar';
 import SiteFooter from './components/SiteFooter';
-import { useIsAdmin } from './hooks/useIsAdmin';
+import Testimonials from './components/Testimonials';
+import { useMe } from './hooks/useMe';
 import { useSession } from './hooks/useSession';
 import { supabase } from './lib/supabase';
 import About from './pages/About';
 import Admin from './pages/Admin';
+import Favorites from './pages/Favorites';
 import Home from './pages/Home';
+import Profile from './pages/Profile';
 import ProjectDetail from './pages/ProjectDetail';
 import ProjectsPage from './pages/ProjectsPage';
 
@@ -34,7 +38,8 @@ function NotFound() {
 
 export default function App() {
   const session = useSession();
-  const isAdmin = useIsAdmin(session);
+  const { me, refreshMe } = useMe(session);
+  const isAdmin = Boolean(me?.is_admin);
   const [showAuth, setShowAuth] = useState(false);
   const openSignIn = () => setShowAuth(true);
 
@@ -43,6 +48,7 @@ export default function App() {
       <ScrollToTop />
       <Navbar
         session={session}
+        me={me}
         isAdmin={isAdmin}
         onSignIn={openSignIn}
         onSignOut={() => supabase.auth.signOut()}
@@ -62,13 +68,17 @@ export default function App() {
             path="/completed-projects"
             element={<ProjectsPage status="completed" title="Completed projects" intro="Finished projects you can view and move into." />}
           />
-          <Route path="/projects/:id" element={<ProjectDetail session={session} isAdmin={isAdmin} onSignIn={openSignIn} />} />
+          <Route path="/projects/:id" element={<ProjectDetail session={session} me={me} isAdmin={isAdmin} onSignIn={openSignIn} />} />
           <Route path="/about" element={<About />} />
+          <Route path="/favourites" element={<Favorites session={session} onSignIn={openSignIn} />} />
+          <Route path="/profile" element={<Profile session={session} me={me} onSignIn={openSignIn} onSaved={refreshMe} />} />
           <Route path="/admin" element={<Admin session={session} onSignIn={openSignIn} />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
+      <Testimonials session={session} onSignIn={openSignIn} />
       <SiteFooter />
+      <AskAI />
       {showAuth && <Auth onClose={() => setShowAuth(false)} />}
     </>
   );

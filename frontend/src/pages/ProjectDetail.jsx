@@ -2,9 +2,15 @@ import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { ArrowLeft, Building2 } from 'lucide-react';
 import Comments from '../components/Comments';
+import EnquiryForm from '../components/EnquiryForm';
+import FavoriteButton from '../components/FavoriteButton';
+import LoanCalculator from '../components/LoanCalculator';
 import ProjectEditForm from '../components/ProjectEditForm';
 import ProjectGallery from '../components/ProjectGallery';
+import WhatsAppIcon from '../components/WhatsAppIcon';
+import '../components/ProjectActions.css';
 import { api } from '../lib/api';
+import { SITE } from '../lib/site';
 import {
   bedroomsLabel,
   friendlyError,
@@ -14,13 +20,14 @@ import {
   typeLabel,
 } from '../lib/format';
 
-export default function ProjectDetail({ session, isAdmin, onSignIn }) {
+export default function ProjectDetail({ session, me, isAdmin, onSignIn }) {
   const { id } = useParams();
   const [project, setProject] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [editing, setEditing] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [enquiryOpen, setEnquiryOpen] = useState(false);
 
   useEffect(() => {
     let ignore = false;
@@ -94,6 +101,7 @@ export default function ProjectDetail({ session, isAdmin, onSignIn }) {
         projectName={project.name}
         isAdmin={isAdmin}
         mainUrl={project.image_url}
+        videoId={project.video_id}
         onChanged={refreshProject}
       />
 
@@ -147,12 +155,39 @@ export default function ProjectDetail({ session, isAdmin, onSignIn }) {
                 <div><dt>Size</dt><dd>{sizeLabel(project.sqft)}</dd></div>
                 <div><dt>Price range</dt><dd>{priceRange(project.price_min, project.price_max)}</dd></div>
               </dl>
+
+              <div className="glance-actions">
+                <a
+                  className="button button-whatsapp"
+                  href={`https://wa.me/${SITE.whatsapp}?text=${encodeURIComponent(`Hi Fateh, please send me more info on ${project.name}`)}`}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  <WhatsAppIcon size={18} /> WhatsApp about this project
+                </a>
+                <button type="button" className="button button-dark" onClick={() => setEnquiryOpen(true)}>
+                  Request a viewing
+                </button>
+                <FavoriteButton projectId={project.id} session={session} onSignIn={onSignIn} />
+              </div>
             </aside>
           </div>
         </>
       )}
 
+      {enquiryOpen && (
+        <EnquiryForm
+          projectId={project.id}
+          projectName={project.name}
+          session={session}
+          me={me}
+          onClose={() => setEnquiryOpen(false)}
+        />
+      )}
+
       <Comments projectId={project.id} session={session} onSignIn={onSignIn} />
+
+      <LoanCalculator key={project.id} defaultAmount={project.price_min ?? project.price_max ?? 1000000} />
     </div>
   );
 }

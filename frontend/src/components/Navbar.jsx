@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
-import { ChevronDown, Menu, X } from 'lucide-react';
+import { ChevronDown, Heart, Menu, X } from 'lucide-react';
 import { SITE } from '../lib/site';
+import Avatar from './Avatar';
+import './Account.css';
 
 const PROPERTY_PATHS = ['/properties', '/new-projects', '/completed-projects'];
 
-export default function Navbar({ session, isAdmin, onSignIn, onSignOut }) {
+export default function Navbar({ session, me, isAdmin, onSignIn, onSignOut }) {
   const [open, setOpen] = useState(false);
   const { pathname } = useLocation();
 
@@ -15,7 +17,7 @@ export default function Navbar({ session, isAdmin, onSignIn, onSignOut }) {
   }, [pathname]);
 
   const propertiesActive = PROPERTY_PATHS.some((path) => pathname.startsWith(path));
-  const userName = session?.user?.email?.split('@')[0];
+  const userName = me?.display_name || session?.user?.email?.split('@')[0];
 
   return (
     <header className="site-header">
@@ -55,7 +57,13 @@ export default function Navbar({ session, isAdmin, onSignIn, onSignOut }) {
           <div className="nav-account">
             {session ? (
               <>
-                <span className="nav-user">{userName}</span>
+                <Link to="/favourites" className="nav-saved" aria-label="My favourites">
+                  <Heart size={18} aria-hidden="true" /> Saved
+                </Link>
+                <Link to="/profile" className="nav-profile" aria-label="My profile">
+                  <Avatar name={userName} url={me?.avatar_url} size={30} />
+                  <span className="nav-user">{userName}</span>
+                </Link>
                 <button type="button" className="button button-ghost" onClick={onSignOut}>Sign out</button>
               </>
             ) : (

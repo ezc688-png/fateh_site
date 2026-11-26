@@ -97,3 +97,53 @@
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+/* Video tile: a thumbnail with a play button. Clicking opens the floating player. */
+.video-tile {
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  background: #000;
+  cursor: pointer;
+}
+
+.video-tile img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.85;
+}
+
+.video-play {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: var(--signal);
+  color: var(--white);
+}
+
+.video-tile:hover .video-play {
+  background: var(--oxblood);
+}
+
+.video-label {
+  position: absolute;
+  left: 0.5rem;
+  bottom: 0.5rem;
+  padding: 0.2rem 0.55rem;
+  background: var(--white);
+  color: var(--ink);
+  font-size: 0.8rem;
+  font-weight: 600;
+}

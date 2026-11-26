@@ -1,15 +1,24 @@
 import { useCallback, useEffect, useState } from 'react';
+import ActivityAdmin from '../components/admin/ActivityAdmin';
 import CommentsAdmin from '../components/admin/CommentsAdmin';
+import EnquiriesAdmin from '../components/admin/EnquiriesAdmin';
+import FavoritesAdmin from '../components/admin/FavoritesAdmin';
 import ProjectsAdmin from '../components/admin/ProjectsAdmin';
+import TestimonialsAdmin from '../components/admin/TestimonialsAdmin';
 import UsersAdmin from '../components/admin/UsersAdmin';
 import { api } from '../lib/api';
 import { friendlyError } from '../lib/format';
 import './Admin.css';
+import '../components/admin/AdminExtras.css';
 
 const TABS = [
   { id: 'projects', label: 'Projects' },
   { id: 'comments', label: 'Comments' },
+  { id: 'enquiries', label: 'Viewing requests' },
+  { id: 'favorites', label: 'Favourites' },
+  { id: 'reviews', label: 'Reviews' },
   { id: 'users', label: 'Users' },
+  { id: 'activity', label: 'Activity' },
 ];
 
 export default function Admin({ session, onSignIn }) {
@@ -81,7 +90,7 @@ export default function Admin({ session, onSignIn }) {
     <div className="page admin">
       <div className="page-head">
         <h1>Admin</h1>
-        <p>Manage projects, comments and users.</p>
+        <p>Manage projects, requests, reviews, users and roles.</p>
       </div>
 
       {statsError && <div className="notice error">{statsError}</div>}
@@ -105,6 +114,14 @@ export default function Admin({ session, onSignIn }) {
             <span className="stat-number">{stats.users}</span>
             <span className="stat-label">Users</span>
           </div>
+          <div className="stat-tile">
+            <span className="stat-number">{stats.new_enquiries}</span>
+            <span className="stat-label">New requests</span>
+          </div>
+          <div className="stat-tile">
+            <span className="stat-number">{stats.pending_reviews}</span>
+            <span className="stat-label">Reviews waiting</span>
+          </div>
         </div>
       )}
 
@@ -125,7 +142,11 @@ export default function Admin({ session, onSignIn }) {
 
       {tab === 'projects' && <ProjectsAdmin onChanged={loadStats} />}
       {tab === 'comments' && <CommentsAdmin onChanged={loadStats} />}
+      {tab === 'enquiries' && <EnquiriesAdmin onChanged={loadStats} />}
+      {tab === 'favorites' && <FavoritesAdmin />}
+      {tab === 'reviews' && <TestimonialsAdmin onChanged={loadStats} />}
       {tab === 'users' && <UsersAdmin />}
+      {tab === 'activity' && <ActivityAdmin />}
     </div>
   );
 }

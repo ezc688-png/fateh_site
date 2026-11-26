@@ -1,0 +1,200 @@
+.loan {
+  background: var(--mist);
+}
+
+.loan-inner {
+  max-width: var(--page-width);
+  margin: 0 auto;
+  padding: clamp(2.5rem, 6vw, 4rem) var(--gutter);
+}
+
+.loan-head h2 {
+  margin: 0 0 0.4rem;
+  font-size: clamp(1.8rem, 3.5vw, 2.4rem);
+}
+
+.loan-head p {
+  margin: 0 0 1.75rem;
+  color: var(--ink-soft);
+}
+
+.loan-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  background: var(--white);
+  border: 1.5px solid var(--line);
+  border-top: 4px solid var(--signal);
+}
+
+.loan-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding: clamp(1.25rem, 3vw, 2rem);
+}
+
+.loan-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.loan-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.loan-input {
+  display: flex;
+  align-items: stretch;
+  border: 1.5px solid var(--line-strong);
+  border-radius: 4px;
+  overflow: hidden;
+  background: var(--white);
+}
+
+.loan-input:focus-within {
+  outline: 2px solid var(--flag);
+  outline-offset: 1px;
+}
+
+.loan-prefix {
+  display: flex;
+  align-items: center;
+  padding: 0 0.8rem;
+  background: var(--mist);
+  color: var(--ink-soft);
+  font-weight: 600;
+}
+
+.loan-input input {
+  flex: 1;
+  min-width: 0;
+  padding: 0.7rem 0.8rem;
+  border: 0;
+  font: inherit;
+  font-weight: 400;
+  background: transparent;
+  color: var(--ink);
+}
+
+.loan-input input:focus {
+  outline: none;
+}
+
+.loan-result {
+  padding: clamp(1.25rem, 3vw, 2rem);
+  background: #f7f7f7;
+  border-left: 1.5px solid var(--line);
+}
+
+.loan-result h3 {
+  margin: 0 0 1rem;
+  font-size: 1.15rem;
+}
+
+.loan-monthly {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.25rem 1rem;
+  margin: 0 0 1rem;
+  color: var(--ink-soft);
+}
+
+.loan-monthly strong {
+  font-size: 1.6rem;
+  color: var(--signal);
+}
+
+.loan-bar {
+  display: flex;
+  height: 28px;
+  overflow: hidden;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--white);
+}
+
+.loan-bar span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.loan-bar-principal {
+  background: var(--oxblood);
+}
+
+.loan-bar-interest {
+  flex: 1;
+  background: #c98a8a;
+}
+
+.loan-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1.25rem;
+  margin: 0.75rem 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.95rem;
+}
+
+.dot {
+  display: inline-block;
+  width: 0.7rem;
+  height: 0.7rem;
+  margin-right: 0.3rem;
+  border-radius: 50%;
+}
+
+.dot-principal {
+  background: var(--oxblood);
+}
+
+.dot-interest {
+  background: #c98a8a;
+}
+
+.loan-total {
+  margin: 0 0 1rem;
+  font-weight: 600;
+}
+
+.loan-hint {
+  margin: 0 0 1rem;
+  color: var(--signal);
+}
+
+.loan-note {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+}
+
+@media (max-width: 800px) {
+  .loan-card {
+    grid-template-columns: 1fr;
+  }
+
+  .loan-result {
+    border-left: 0;
+    border-top: 1.5px solid var(--line);
+  }
+}
+
+/* On a project page the calculator sits inside the page column, so give it room above. */
+.detail .loan {
+  margin-top: 3rem;
+}
+
+.detail .loan-inner {
+  padding-left: clamp(1rem, 3vw, 2rem);
+  padding-right: clamp(1rem, 3vw, 2rem);
+}

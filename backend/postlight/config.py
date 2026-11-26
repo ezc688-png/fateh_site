@@ -12,6 +12,7 @@ class Settings(BaseSettings):
     gemini_embedding_model: str = "gemini-embedding-2"
     frontend_origin: str = "http://localhost:5173"
     admin_emails: str = ""
+    discord_webhook_url: str = ""
 
 
 settings = Settings()

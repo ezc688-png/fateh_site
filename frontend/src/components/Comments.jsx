@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { MessageSquare } from 'lucide-react';
+import Avatar from './Avatar';
 import { api } from '../lib/api';
 import { friendlyError } from '../lib/format';
 import './Comments.css';
@@ -55,7 +56,10 @@ function CommentItem({ comment, isOwner, onSave, onDelete }) {
   return (
     <li className="comment">
       <div className="comment-head">
-        <strong>{comment.author_name}</strong>
+        <span className="comment-author">
+          <Avatar name={comment.author_name} url={comment.author_avatar} size={32} />
+          <strong>{comment.author_name}</strong>
+        </span>
         <span className="comment-date">
           {formatDate(comment.created_at)}
           {edited && ' (edited)'}

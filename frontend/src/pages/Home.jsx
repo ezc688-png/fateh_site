@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Phone } from 'lucide-react';
+import LoanCalculator from '../components/LoanCalculator';
 import ProjectCard from '../components/ProjectCard';
 import { api } from '../lib/api';
 import { friendlyError } from '../lib/format';
@@ -72,6 +73,8 @@ export default function Home() {
           </div>
         )}
       </section>
+
+      <LoanCalculator />
 
       <section className="contact-strip">
         <div className="contact-inner">

@@ -5,13 +5,18 @@ from fastapi.middleware.cors import CORSMiddleware
 from postlight.config import settings
 from postlight.routers import (
     admin_panel,
+    ask,
     chat,
     comments,
+    enquiries,
+    favorites,
     health,
     me,
     posts,
+    profile,
     project_images,
     projects,
+    testimonials,
 )
 
 
@@ -30,5 +35,10 @@ app.include_router(chat.router)
 app.include_router(projects.router)
 app.include_router(comments.router)
 app.include_router(project_images.router)
+app.include_router(ask.router)
+app.include_router(enquiries.router)
+app.include_router(favorites.router)
+app.include_router(testimonials.router)
+app.include_router(profile.router)
 app.include_router(me.router)
 app.include_router(admin_panel.router)

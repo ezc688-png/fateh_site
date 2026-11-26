@@ -1,3 +1,4 @@
+import re
 from typing import Annotated, Literal
 from uuid import UUID
 
@@ -7,6 +8,7 @@ from psycopg.rows import dict_row
 from postlight.admin import require_admin
 from postlight.config import settings
 from postlight.database import connection
+from postlight.services.audit import log_activity
 from postlight.services.storage import remove_image_best_effort, store_image
 
 router = APIRouter()
@@ -16,6 +18,32 @@ COVER_SQL = (
     "coalesce(p.image_path, (select i.image_path from public.project_images i "
     "where i.project_id = p.id order by i.position, i.created_at limit 1)) as cover_path"
 )
+
+
+# Accepts the usual YouTube link shapes and captures the 11-character video id.
+YOUTUBE_RE = re.compile(
+    r"^(?:https?://)?(?:www\.|m\.)?"
+    r"(?:youtube\.com/(?:watch\?(?:[^#]*&)?v=|embed/|shorts/|live/)|youtu\.be/|youtube-nocookie\.com/embed/)"
+    r"([A-Za-z0-9_-]{11})(?:[?&#/].*)?$"
+)
+
+
+def youtube_id(url: str | None) -> str | None:
+    if not url:
+        return None
+    match = YOUTUBE_RE.match(url.strip())
+    return match.group(1) if match else None
+
+
+# Empty means "no video". Anything else must be a real YouTube link; we store a tidy canonical one.
+def clean_video(value: str | None) -> str | None:
+    value = (value or "").strip()
+    if not value:
+        return None
+    video_id = youtube_id(value)
+    if video_id is None:
+        raise HTTPException(422, "Paste a YouTube link, for example https://www.youtube.com/watch?v=...")
+    return f"https://www.youtube.com/watch?v={video_id}"
 
 
 def image_url(path: str | None) -> str | None:
@@ -40,6 +68,8 @@ def serialize_project(row: dict) -> dict:
         "price_min": row["price_min"],
         "price_max": row["price_max"],
         "image_url": image_url(cover),
+        "video_url": row.get("video_url"),
+        "video_id": youtube_id(row.get("video_url")),
         "created_at": row["created_at"].isoformat(),
     }
 
@@ -102,21 +132,25 @@ async def create_project(
     is_penthouse: Annotated[bool, Form()] = False,
     price_min: Annotated[int | None, Form()] = None,
     price_max: Annotated[int | None, Form()] = None,
+    video_url: Annotated[str | None, Form()] = None,
     image: UploadFile | None = File(default=None),
 ):
     name, description, area = clean_fields(name, description, area, price_min, price_max)
+    video_url = clean_video(video_url)
     new_path = await store_image(image, admin_id)
     try:
         with connection() as conn, conn.cursor(row_factory=dict_row) as cur:
             cur.execute(
                 "insert into public.projects "
                 "(name, description, category, status, area, bedrooms, sqft, is_penthouse, "
-                "price_min, price_max, image_path) "
-                "values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) returning *",
+                "price_min, price_max, image_path, video_url) "
+                "values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) returning *",
                 (name, description, category, status, area, bedrooms, sqft,
-                 is_penthouse, price_min, price_max, new_path),
+                 is_penthouse, price_min, price_max, new_path, video_url),
             )
-            return serialize_project(cur.fetchone())
+            created = serialize_project(cur.fetchone())
+        log_activity(admin_id, "Created project", name)
+        return created
     except Exception:
         remove_image_best_effort(new_path)
         raise
@@ -136,10 +170,12 @@ async def update_project(
     is_penthouse: Annotated[bool, Form()] = False,
     price_min: Annotated[int | None, Form()] = None,
     price_max: Annotated[int | None, Form()] = None,
+    video_url: Annotated[str | None, Form()] = None,
     remove_existing_image: Annotated[bool, Form()] = False,
     image: UploadFile | None = File(default=None),
 ):
     name, description, area = clean_fields(name, description, area, price_min, price_max)
+    video_url = clean_video(video_url)
     if image and remove_existing_image:
         raise HTTPException(422, "Choose a replacement image or remove the current image")
     new_path = await store_image(image, admin_id)
@@ -156,9 +192,10 @@ async def update_project(
             cur.execute(
                 "update public.projects set name = %s, description = %s, category = %s, "
                 "status = %s, area = %s, bedrooms = %s, sqft = %s, is_penthouse = %s, "
-                "price_min = %s, price_max = %s, image_path = %s where id = %s returning *",
+                "price_min = %s, price_max = %s, image_path = %s, video_url = %s "
+                "where id = %s returning *",
                 (name, description, category, status, area, bedrooms, sqft,
-                 is_penthouse, price_min, price_max, path, project_id),
+                 is_penthouse, price_min, price_max, path, video_url, project_id),
             )
             row = cur.fetchone()
     except Exception:
@@ -166,15 +203,17 @@ async def update_project(
         raise
     if old_path and old_path != path:
         remove_image_best_effort(old_path)
+    log_activity(admin_id, "Edited project", name)
     return serialize_project(row)
 
 
 @router.delete("/projects/{project_id}", status_code=204)
 def delete_project(project_id: UUID, admin_id: Annotated[UUID, Depends(require_admin)]):
     with connection() as conn, conn.cursor(row_factory=dict_row) as cur:
-        cur.execute("select image_path from public.projects where id = %s for update", (project_id,))
+        cur.execute("select image_path, name from public.projects where id = %s for update", (project_id,))
         row = cur.fetchone()
         if row is None:
             raise HTTPException(404, "Project not found")
         cur.execute("delete from public.projects where id = %s", (project_id,))
     remove_image_best_effort(row["image_path"])
+    log_activity(admin_id, "Deleted project", row["name"])

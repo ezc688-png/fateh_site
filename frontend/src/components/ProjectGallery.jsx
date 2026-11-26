@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ArrowLeft, ArrowRight, ImagePlus, Star, Trash2 } from 'lucide-react';
+import { ArrowLeft, ArrowRight, ImagePlus, Play, Star, Trash2 } from 'lucide-react';
 import { api } from '../lib/api';
 import { friendlyError } from '../lib/format';
+import VideoModal from './VideoModal';
 import './ProjectGallery.css';
 
 const MAX_FILES = 10;
@@ -9,13 +10,15 @@ const MAX_MB = 5;
 const ALLOWED = ['image/jpeg', 'image/png', 'image/webp'];
 
 // `mainUrl` is the project's current main photo; `onChanged` asks the page to reload it after a change.
-export default function ProjectGallery({ projectId, projectName, isAdmin, mainUrl, onChanged }) {
+// `videoId` (optional) adds a clickable video tile that opens a floating YouTube player.
+export default function ProjectGallery({ projectId, projectName, isAdmin, mainUrl, videoId, onChanged }) {
   const [images, setImages] = useState([]);
   const [error, setError] = useState('');
   const [chosen, setChosen] = useState([]);
   const [uploading, setUploading] = useState(false);
   const [confirmId, setConfirmId] = useState(null);
   const [busyId, setBusyId] = useState(null);
+  const [playing, setPlaying] = useState(false);
   const fileInput = useRef(null);
 
   const load = useCallback(() => {
@@ -104,11 +107,11 @@ export default function ProjectGallery({ projectId, projectName, isAdmin, mainUr
     }
   }
 
-  if (!isAdmin && images.length === 0) return null;
+  if (!isAdmin && images.length === 0 && !videoId) return null;
 
   return (
     <section className="gallery" aria-label={`${projectName} pictures`}>
-      {images.length > 0 && (
+      {(images.length > 0 || videoId) && (
         <ul className="gallery-grid">
           {images.map((image, index) => (
             <li key={image.id} className="gallery-item">
@@ -175,7 +178,26 @@ export default function ProjectGallery({ projectId, projectName, isAdmin, mainUr
               )}
             </li>
           ))}
+          {videoId && (
+            <li className="gallery-item gallery-video">
+              <button type="button" className="video-tile" onClick={() => setPlaying(true)}>
+                <img
+                  src={`https://img.youtube.com/vi/${videoId}/hqdefault.jpg`}
+                  alt=""
+                  loading="lazy"
+                />
+                <span className="video-play" aria-hidden="true">
+                  <Play size={26} fill="currentColor" />
+                </span>
+                <span className="video-label">Watch video</span>
+              </button>
+            </li>
+          )}
         </ul>
+      )}
+
+      {playing && videoId && (
+        <VideoModal videoId={videoId} title={projectName} onClose={() => setPlaying(false)} />
       )}
 
       {isAdmin && (

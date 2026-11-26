@@ -1,0 +1,89 @@
+/* Red band above the footer, so .button-outline (white on red) is readable here. */
+.testimonials {
+  background: var(--oxblood);
+  color: var(--white);
+  padding: clamp(2.5rem, 6vw, 4rem) var(--gutter);
+}
+
+.testimonials-inner {
+  max-width: 760px;
+  margin: 0 auto;
+  text-align: center;
+  display: grid;
+  gap: 1.25rem;
+  justify-items: center;
+}
+
+.testimonials h2 { margin: 0; color: var(--white); font-size: 1.8rem; }
+
+.testimonial { display: grid; gap: 1rem; justify-items: center; width: 100%; }
+
+.stars { display: inline-flex; gap: 0.15rem; color: #ffd24d; }
+
+.testimonial blockquote {
+  margin: 0;
+  font-size: 1.15rem;
+  line-height: 1.6;
+  animation: review-in 0.5s ease;
+}
+
+.testimonial-author { display: flex; align-items: center; gap: 0.6rem; }
+.testimonial-author .avatar { background: var(--white); color: var(--oxblood); }
+
+.testimonial-nav { display: flex; align-items: center; gap: 0.75rem; }
+
+.testimonial-nav > button {
+  display: inline-flex;
+  padding: 0.35rem;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: 50%;
+  background: none;
+  color: var(--white);
+  cursor: pointer;
+}
+
+.dots { display: inline-flex; gap: 0.4rem; }
+
+.dot {
+  width: 0.65rem;
+  height: 0.65rem;
+  padding: 0;
+  border: 1px solid var(--white);
+  border-radius: 50%;
+  background: none;
+  cursor: pointer;
+}
+
+.dot.active { background: var(--white); }
+
+.testimonials-empty { margin: 0; }
+
+.testimonials .notice { color: var(--ink); }
+
+.review-form { display: grid; gap: 0.6rem; width: 100%; max-width: 560px; text-align: left; }
+.review-form fieldset { margin: 0; padding: 0; border: 0; }
+.review-form legend, .review-form label { font-weight: 600; }
+
+.review-form textarea {
+  width: 100%;
+  padding: 0.7rem;
+  border: 0;
+  border-radius: 4px;
+  font: inherit;
+  color: var(--ink);
+}
+
+.rating-pick { display: flex; gap: 0.2rem; }
+.rating-pick button { display: inline-flex; padding: 0.15rem; border: 0; background: none; color: rgba(255, 255, 255, 0.7); cursor: pointer; }
+.rating-pick button.on { color: #ffd24d; }
+
+.review-actions { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+
+@keyframes review-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .testimonial blockquote { animation: none; }
+}
